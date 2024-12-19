@@ -1,0 +1,566 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #343a40;
+            color: white;
+            padding-top: 20px;
+        }
+
+            .sidebar a {
+                color: white;
+                text-decoration: none;
+                padding: 10px 15px;
+                display: block;
+                transition: background-color 0.2s;
+            }
+
+                .sidebar a:hover {
+                    background-color: #495057;
+                }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+
+            .btn-primary:hover {
+                background-color: #0056b3;
+            }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border: none;
+        }
+
+            .btn-danger:hover {
+                background-color: #c82333;
+            }
+
+        .btn-success {
+            background-color: #28a745;
+            border: none;
+        }
+
+            .btn-success:hover {
+                background-color: #218838;
+            }
+
+        .card {
+            border-radius: 10px;
+        }
+
+        .modal .modal-content {
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h3 class="text-center">Dashboard</h3>
+        <a href="#" id="profileLink">🧑‍💼 Môj Profil</a>
+        <a href="#" id="plansLink">📋 Tréningové Plány</a>
+        <a href="#" id="settingsLink">⚙️ Nastavenia</a>
+        <div id="paymentButtonContainer" class="mt-3" style="display:none;">
+            <button class="btn btn-primary w-100" id="paymentButton">💳 Vykonať platbu</button>
+        </div>
+        <button class="btn btn-danger w-100 mt-4" id="logoutButton">🚪 Odhlásiť sa</button>
+    </div>
+
+    <div class="main-content">
+        <h2 id="welcomeMessage" class="mb-4">Vitajte na vašom Dashboarde!</h2>
+
+        <div id="unassignedUsersSection" style="display:none;" class="mb-4">
+            <h3>Používatelia bez trénera</h3>
+            <div class="mb-3">
+                <select class="form-select" id="unassignedUsersSelect">
+                    <option value="" disabled selected>Vyberte používateľa</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" id="assignTrainerButton">Priradiť trénera</button>
+        </div>
+
+        <div id="trainerInfo" style="display:none;" class="mb-4">
+            <h3>Môj tréner</h3>
+            <p id="trainerName"></p>
+        </div>
+
+        <div id="createPlanContainer" class="mb-4"></div>
+
+        <h3>Moje tréningové plány</h3>
+        <div id="trainingPlans" class="mt-4"></div>
+
+        <div id="paymentSection" style="display:none;">
+            <h3>História platieb</h3>
+            <div id="paymentHistory" class="mt-3"></div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="createPlanModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Vytvoriť nový tréningový plán</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createPlanForm">
+
+                        <div class="mb-3">
+                            <label for="userSelect" class="form-label">Používateľ</label>
+                            <select class="form-select" id="userSelect" required>
+                                <option value="" disabled selected>Vyberte používateľa</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="createPlanDescription" class="form-label">Popis</label>
+                            <textarea class="form-control" id="createPlanDescription" rows="3" required></textarea>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="createPlanActive">
+                            <label class="form-check-label" for="createPlanActive">Aktívne</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-success mt-3">Vytvoriť</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="editPlanModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upraviť tréningový plán</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editPlanForm">
+                        <div class="mb-3">
+                            <label for="editPlanDescription" class="form-label">Popis</label>
+                            <textarea class="form-control" id="editPlanDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="editPlanActive">
+                            <label class="form-check-label" for="editPlanActive">Aktívne</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Uložiť zmeny</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Vykonať platbu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="paymentForm">
+
+                        <div class="mb-3">
+                            <label for="paymentType" class="form-label">Typ platby</label>
+                            <input type="text" id="paymentType" class="form-control" placeholder="Zadajte typ služby (napr. tréningový plán)" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="paymentAmount" class="form-label">Suma</label>
+                            <input type="number" id="paymentAmount" class="form-control" step="0.01" placeholder="Zadajte sumu" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-success mt-3">Zaplať</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const role = urlParams.get('role');
+        const userId = urlParams.get('id');
+        const trainingPlansContainer = document.getElementById('trainingPlans');
+        const createPlanContainer = document.getElementById('createPlanContainer');
+        const paymentButtonContainer = document.getElementById('paymentButtonContainer');
+        const paymentSection = document.getElementById('paymentSection');
+        const unassignedUsersSection = document.getElementById('unassignedUsersSection');
+        const unassignedUsersSelect = document.getElementById('unassignedUsersSelect');
+        const trainerInfo = document.getElementById('trainerInfo');
+        const trainerName = document.getElementById('trainerName');
+        let selectedPlanId = null;
+
+
+        if (role === 'user') {
+            paymentButtonContainer.style.display = 'block';
+            paymentSection.style.display = 'block';
+        }
+
+        if (role === 'trainer') {
+            unassignedUsersSection.style.display = 'block';
+        }
+
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        if (role === 'user') {
+            welcomeMessage.textContent = `Vitajte na vašom používateľskom Dashboarde, používateľ #${userId}!`;
+        } else if (role === 'trainer') {
+            welcomeMessage.textContent = `Vitajte na vašom trénerovskom Dashboarde, tréner #${userId}!`;
+            createPlanContainer.innerHTML = `<button class="btn btn-success" id="createPlanButton">+ Vytvoriť nový tréningový plán</button>`;
+        } else {
+            window.location.href = '/login.html';
+        }
+
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            alert('Odhlasujem...');
+            window.location.href = '/login.html';
+        });
+
+        const loadTrainingPlans = async () => {
+            let endpoint = role === 'user' ? `/api/TrainingPlans/user/${userId}` : `/api/TrainingPlans/trainer/${userId}`;
+
+            try {
+                const response = await fetch(endpoint);
+                if (!response.ok) {
+                    throw new Error("Failed to load training plans.");
+                }
+
+                const plans = await response.json();
+                trainingPlansContainer.innerHTML = '';
+                plans.forEach(plan => {
+                    const planElement = document.createElement('div');
+                    planElement.classList.add('card', 'p-3', 'mb-2');
+                    planElement.innerHTML = `
+                            <h5>${plan.description}</h5>
+                            <p>Vytvorené: ${new Date(plan.createdAt).toLocaleDateString()}</p>
+                            <p>Aktívne: ${plan.active ? 'Áno' : 'Nie'}</p>
+                            ${role === 'trainer' ? `
+                                <button class="btn btn-primary me-2" onclick="editPlan(${plan.id})">Upraviť</button>
+                                <button class="btn btn-danger" onclick="deletePlan(${plan.id})">Vymazať</button>
+                            ` : ''}
+                        `;
+                    trainingPlansContainer.appendChild(planElement);
+                });
+            } catch (error) {
+                trainingPlansContainer.innerHTML = `<p>Chyba pri načítaní tréningových plánov.</p>`;
+                console.error('Error loading training plans:', error);
+            }
+        };
+
+        async function loadUserTrainer() {
+            if (role !== 'user') return;
+            try {
+                const response = await fetch(`/api/User/${userId}/trainer`);
+                if (!response.ok) {
+                    console.warn('No trainer found or failed to load trainer.');
+                    return;
+                }
+                const trainer = await response.json();
+                if (trainer && trainer.name && trainer.surname) {
+                    trainerInfo.style.display = 'block';
+                    trainerName.textContent = `Váš tréner: ${trainer.name} ${trainer.surname}`;
+                } else {
+                    trainerInfo.style.display = 'block';
+                    trainerName.textContent = 'Momentálne nemáte priradeného trénera.';
+                }
+            } catch (error) {
+                console.error('Error loading user trainer:', error);
+            }
+        }
+
+        if (role === 'user') {
+            welcomeMessage.textContent = `Vitajte na vašom používateľskom Dashboarde, používateľ #${userId}!`;
+            loadUserTrainer();
+        }
+
+
+        const loadUsersForTrainer = async () => {
+            try {
+                const response = await fetch(`/api/user/trainer/${userId}/users`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch users.");
+                }
+
+                const users = await response.json();
+                const userSelect = document.getElementById('userSelect');
+                userSelect.innerHTML = '<option value="" disabled selected>Vyberte používateľa</option>';
+                users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id; 
+                    option.textContent = `${user.name} ${user.surname}`;
+                    userSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error fetching users:', error);
+                alert('Chyba pri načítaní používateľov.');
+            }
+        };
+
+        const loadUnassignedUsers = async () => {
+            if (role !== 'trainer') return;
+            try {
+                const response = await fetch('/api/User/unassigned');
+                if (!response.ok) {
+                    throw new Error('Failed to load unassigned users.');
+                }
+
+                const users = await response.json();
+                unassignedUsersSelect.innerHTML = '<option value="" disabled selected>Vyberte používateľa</option>';
+                users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.text = `${user.name} ${user.surname} (ID: ${user.id})`;
+                    unassignedUsersSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading unassigned users:', error);
+            }
+        };
+
+        document.getElementById('assignTrainerButton')?.addEventListener('click', async () => {
+            const selectedUserId = unassignedUsersSelect.value;
+            if (!selectedUserId) {
+                alert('Vyberte používateľa.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/User/assignTrainer?userId=${selectedUserId}&trainerId=${userId}`, {
+                    method: 'PUT'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to assign trainer to user.');
+                }
+
+                alert('Používateľovi bol priradený tréner.');
+
+                await loadUnassignedUsers();
+                await loadUsersForTrainer();
+            } catch (error) {
+                console.error('Error assigning trainer:', error);
+                alert('Chyba pri priraďovaní trénera.');
+            }
+        });
+
+
+        document.getElementById('createPlanButton')?.addEventListener('click', () => {
+            loadUsersForTrainer();
+            const modal = new bootstrap.Modal(document.getElementById('createPlanModal'));
+            modal.show();
+        });
+
+        document.getElementById('createPlanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const selectedUserId = document.getElementById('userSelect').value;
+            const description = document.getElementById('createPlanDescription').value;
+            const active = document.getElementById('createPlanActive').checked;
+
+            if (!selectedUserId) {
+                alert('Vyberte používateľa.');
+                return;
+            }
+
+            const newPlan = {
+                userId: selectedUserId,
+                description: description,
+                active: active,
+                createdAt: new Date().toISOString(),
+            };
+
+            try {
+                const response = await fetch(`/api/TrainingPlans`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newPlan),
+                });
+
+                if (response.ok) {
+                    alert('Plán úspešne vytvorený.');
+                    document.getElementById('createPlanForm').reset();
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createPlanModal'));
+                    modal.hide();
+                    loadTrainingPlans();
+                } else {
+                    throw new Error("Failed to create the training plan.");
+                }
+            } catch (error) {
+                alert('Chyba pri vytváraní plánu.');
+                console.error('Error creating training plan:', error);
+            }
+        });
+
+        const editPlan = async (planId) => {
+            selectedPlanId = planId;
+
+            try {
+
+                const response = await fetch(`/api/TrainingPlans/${planId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch training plan data.');
+                }
+                const plan = await response.json();
+
+
+                document.getElementById('editPlanDescription').value = plan.description || '';
+                document.getElementById('editPlanActive').checked = plan.active;
+
+                const modalElement = document.getElementById('editPlanModal');
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            } catch (error) {
+                console.error('Error fetching training plan:', error);
+                alert('Chyba pri načítaní údajov tréningového plánu.');
+            }
+        };
+
+        document.getElementById('editPlanForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+
+            const updatedPlan = {
+                description: document.getElementById('editPlanDescription').value,
+                active: document.getElementById('editPlanActive').checked,
+            };
+
+            try {
+
+                const response = await fetch(`/api/TrainingPlans/${selectedPlanId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedPlan),
+                });
+
+                if (response.ok) {
+                    alert('Plán úspešne upravený.');
+                    loadTrainingPlans(); 
+                    const modalElement = document.getElementById('editPlanModal');
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    if (modal) {
+                        modal.hide();
+                    }
+                } else {
+                    const error = await response.json();
+                    alert(`Chyba pri úprave plánu: ${error.message}`);
+                }
+            } catch (error) {
+                console.error('Error updating training plan:', error);
+                alert('Chyba pri úprave tréningového plánu.');
+            }
+        });
+
+        const deletePlan = async (planId) => {
+            if (confirm('Naozaj chcete vymazať tento plán?')) {
+                try {
+                    const response = await fetch(`/api/TrainingPlans/${planId}`, {
+                        method: 'DELETE',
+                    });
+
+                    if (response.ok) {
+                        alert('Plán úspešne vymazaný.');
+                        loadTrainingPlans();
+                    } else {
+                        throw new Error("Failed to delete the plan.");
+                    }
+                } catch (error) {
+                    alert('Chyba pri vymazávaní plánu.');
+                    console.error('Error deleting training plan:', error);
+                }
+            }
+        };
+
+        const loadPayments = async () => {
+            if (role === 'user') {
+                try {
+                    const response = await fetch(`/api/Payments/user/${userId}`);
+                    if (!response.ok) throw new Error('Failed to load payments.');
+
+                    const payments = await response.json();
+                    const paymentHistory = document.getElementById('paymentHistory');
+                    paymentHistory.innerHTML = '';
+                    payments.forEach(payment => {
+                        paymentHistory.innerHTML += `
+                                    <div class="card p-3 mb-2">
+                                        <h5>${payment.type}</h5>
+                                        <p>Suma: ${payment.amount} €</p>
+                                        <p>Dátum: ${new Date(payment.date).toLocaleDateString()}</p>
+                                    </div>
+                                `;
+                    });
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+        };
+
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payment = {
+                type: document.getElementById('paymentType').value,
+                amount: parseFloat(document.getElementById('paymentAmount').value),
+                userId: userId
+            };
+            try {
+                const response = await fetch('/api/Payments/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payment)
+                });
+                if (!response.ok) throw new Error('Failed to make payment.');
+                alert('Platba úspešne vykonaná.');
+                bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+
+                loadPayments();
+                loadTrainingPlans();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        document.getElementById('paymentButton')?.addEventListener('click', () => {
+            const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+            modal.show();
+        });
+
+        loadTrainingPlans();
+        if (role === 'user') {
+            loadPayments();
+        }
+        if (role === 'trainer') {
+            loadUnassignedUsers();
+        }
+
+        window.editPlan = editPlan;
+        window.deletePlan = deletePlan;
+    </script>
+
+</body>
+</html>

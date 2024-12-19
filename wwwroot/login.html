@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prihlásenie</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container">
+        <div class="row justify-content-center align-items-center vh-100">
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h3 class="text-center mb-4">Prihlásenie</h3>
+                        <form id="loginForm">
+                            <!-- Email Field -->
+                            <div class="mb-3">
+                                <label for="email" class="form-label">E-mail:</label>
+                                <input type="email" class="form-control" id="email" placeholder="Zadajte váš e-mail" required>
+                            </div>
+                            <!-- Password Field -->
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Heslo:</label>
+                                <input type="password" class="form-control" id="password" placeholder="Zadajte vaše heslo" required>
+                            </div>
+                            <!-- Submit Button -->
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success">Prihlásiť sa</button>
+                            </div>
+                        </form>
+                        <!-- Register Link -->
+                        <div class="text-center mt-3">
+                            <small>Nemáte účet? <a href="/register.html" class="text-success">Zaregistrujte sa</a></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JavaScript for Login -->
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const credentials = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+
+            try {
+                // Send login request to AuthController
+                const response = await fetch('/api/Auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(credentials)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Check role and redirect appropriately
+                    if (result.role === 'user') {
+                        alert('Prihlásenie úspešné! Vitajte, používateľ.');
+                        window.location.href = `/dashboard.html?role=user&id=${result.id}`; // Redirect to dashboard with role and id as query params
+                    } else if (result.role === 'trainer') {
+                        alert('Prihlásenie úspešné! Vitajte, tréner.');
+                        window.location.href = `/dashboard.html?role=trainer&id=${result.id}`; // Redirect to dashboard with role and id as query params
+                    }
+                } else {
+                    alert('Chyba: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Došlo k chybe pri prihlasovaní.');
+            }
+        });
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+# **/.NET/.NET Core**
+# Ignore build output directories
+/bin/
+/obj/
+
+# Ignore user-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# Ignore NuGet packages
+*.nupkg
+**/packages/*
+!**/packages/build/
+!**/packages/repositories.config
+
+# Ignore build results
+*.dll
+*.exe
+*.pdb
+*.cache
+*.config
+
+# Ignore ASP.NET temporary files
+/App_Data/
+/wwwroot/lib/
+/wwwroot/node_modules/
+
+# Ignore Visual Studio specific files
+.vs/
+.vscode/
+*.csproj.user
+*.sln.ide
+
+# Ignore Logs
+*.log
+
+# Ignore Rider specific files
+.idea/
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+# **/node_modules**
+# If your project uses Node.js, uncomment the following line
+# /node_modules/
+
+# **/publish**
+# If you have a publish directory, uncomment the following line
+# /publish/
+
+# **/temp**
+# If you have a temp directory, uncomment the following line
+# /temp/
+
+# **Additional Ignored Files**
+
+# Ignore appsettings files
+appsettings*.json
+
+# Ignore Properties directory
+/Properties/

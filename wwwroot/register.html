@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrácia</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            border-radius: 10px;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border: none;
+        }
+
+            .btn-success:hover {
+                background-color: #218838;
+            }
+    </style>
+</head>
+<body>
+    <div class="container vh-100 d-flex justify-content-center align-items-center">
+        <div class="card shadow-sm p-4" style="max-width: 400px; width: 100%;">
+            <h3 class="text-center mb-4">Registrácia</h3>
+
+            <div class="mb-3">
+                <label for="roleSelect" class="form-label">Vyberte typ registrácie:</label>
+                <select class="form-select" id="roleSelect">
+                    <option value="user" selected>Registrovať sa ako používateľ</option>
+                    <option value="trainer">Registrovať sa ako tréner</option>
+                </select>
+            </div>
+
+            <form id="registerForm">
+                <div id="commonFields">
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Meno:</label>
+                        <input type="text" class="form-control" id="name" placeholder="Zadajte vaše meno" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="surname" class="form-label">Priezvisko:</label>
+                        <input type="text" class="form-control" id="surname" placeholder="Zadajte vaše priezvisko" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">E-mail:</label>
+                        <input type="email" class="form-control" id="email" placeholder="Zadajte váš e-mail" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Telefón:</label>
+                        <input type="text" class="form-control" id="phone" placeholder="Zadajte vaše telefónne číslo" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Heslo:</label>
+                        <input type="password" class="form-control" id="password" placeholder="Zadajte vaše heslo" required>
+                    </div>
+                </div>
+
+
+                <div id="trainerFields" style="display: none;">
+                    <div class="mb-3">
+                        <label for="specialisation" class="form-label">Špecializácia:</label>
+                        <input type="text" class="form-control" id="specialisation" placeholder="Zadajte vašu špecializáciu">
+                    </div>
+                    <div class="mb-3">
+                        <label for="skills" class="form-label">Zručnosti:</label>
+                        <input type="text" class="form-control" id="skills" placeholder="Zadajte vaše zručnosti">
+                    </div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success">Zaregistrovať sa</button>
+                </div>
+            </form>
+            <div class="text-center mt-3">
+                <small>Máte už účet? <a href="/login.html" class="text-success">Prihláste sa</a></small>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const roleSelect = document.getElementById('roleSelect');
+        const trainerFields = document.getElementById('trainerFields');
+        const registerForm = document.getElementById('registerForm');
+
+        roleSelect.addEventListener('change', () => {
+            if (roleSelect.value === 'trainer') {
+                trainerFields.style.display = 'block';
+            } else {
+                trainerFields.style.display = 'none';
+            }
+        });
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const user = {
+                name: document.getElementById('name').value,
+                surname: document.getElementById('surname').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                password: document.getElementById('password').value
+            };
+
+
+            if (roleSelect.value === 'user') {
+                user.role = 'U'; 
+                user.trainerId = null;
+            } else if (roleSelect.value === 'trainer') {
+                user.role = 'T'; 
+                user.specialisation = document.getElementById('specialisation').value;
+                user.skills = document.getElementById('skills').value;
+            }
+
+            try {
+                const endpoint = roleSelect.value === 'trainer' ? '/api/Auth/register/trainer' : '/api/Auth/register/user';
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(user)
+                });
+
+                const message = await response.text();
+                if (response.ok) {
+                    alert('Registrácia úspešná: ' + message);
+                    window.location.href = '/login.html'; 
+                } else {
+                    alert('Registrácia zlyhala: ' + message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Došlo k chybe počas registrácie.');
+            }
+        });
+    </script>
+</body>
+</html>
